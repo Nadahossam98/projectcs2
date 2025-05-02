@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>imgs/heart.png</file>
+        <file>imgs/coin.png</file>
+        <file>imgs/checkpoint.png</file>
+        <file>imgs/clouds.png</file>
+        <file>imgs/clouds2.png</file>
+        <file>imgs/clouds3.png</file>
+        <file>imgs/upgraded.png</file>
+        <file>imgs/full-ground-stone.png</file>
+        <file>imgs/long-platform-stone.png</file>
+        <file>imgs/short-platform-stone.png</file>
+        <file>imgs/background1.jpg</file>
+        <file>imgs/enemy1.png</file>
+        <file>imgs/player1.png</file>
+        <file>imgs/reversed-enemy1.png</file>
+        <file>imgs/reversed-player1.png</file>
+        <file>imgs/spikes1.png</file>
+        <file>imgs/book.png</file>
+        <file>imgs/bullet.png</file>
+        <file>imgs/fakebook.png</file>
+        <file>imgs/reversed-bullet.png</file>
+    </qresource>
+</RCC>

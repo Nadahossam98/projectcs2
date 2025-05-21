@@ -9,7 +9,6 @@
 #include "book.h"
 #include "checkpoint.h"
 #include "platform.h"
-#include <QApplication>
 
 Player::Player(QGraphicsItem *parent)
     : QGraphicsPixmapItem(parent),
@@ -18,7 +17,10 @@ Player::Player(QGraphicsItem *parent)
     inJump(false),
     onSurface(false),
     velocityY(0),
-    fallTimer(new QTimer(this))
+    fallTimer(new QTimer(this)),
+    boostTimer(new QTimer(this)),
+    levelUI(nullptr),
+    finalUI(nullptr)
 {
     setPixmap(QPixmap(":/imgs/player1.png"));
     connect(fallTimer, &QTimer::timeout, this, &Player::applyFall);
@@ -36,6 +38,12 @@ void Player::setBookScore(BookScore *score) {
 }
 void Player::setLevel(LevelClass *lvl) {
     levelRef = lvl;
+}
+void Player::setLevelCompleteUI(LevelCompletedWindow *window) {
+    levelUI = window;
+}
+void Player::setGameCompleteUI(GameCompletedWindow *window) {
+    finalUI = window;
 }
 
 void Player::detectEnemyCollision() {
@@ -93,6 +101,9 @@ void Player::detectCoinPickup() {
             coinCounter->increase_score();
             scene()->removeItem(coin);
             delete coin;
+            if (coinCounter->get_current_score() == 100)
+                activateBoost();
+            return;
         }
     }
 }
@@ -112,7 +123,11 @@ void Player::detectCheckpointTrigger() {
     for (QGraphicsItem* obj : collidingItems()) {
         auto* checkpoint = dynamic_cast<CheckPoint*>(obj);
         if (checkpoint) {
-            QApplication::quit();
+            if (finalUI)
+                finalUI->exec();
+            else if (levelUI)
+                levelUI->exec();
+            return;
         }
     }
 }
@@ -173,6 +188,20 @@ void Player::walkRight(int step) {
         setY(y() - 2);
 }
 
+void Player::shoot() {
+    Bullet* bullet = new Bullet(facingLeft);
+
+    // Position bullet near player
+    if (facingLeft) {
+        bullet->setPos(x() - bullet->boundingRect().width(), y() + boundingRect().height() / 2);
+    } else {
+        bullet->setPos(x() + boundingRect().width(), y() + boundingRect().height() / 2);
+    }
+
+    scene()->addItem(bullet);
+}
+
+
 void Player::keyPressEvent(QKeyEvent *event) {
     int moveStep = 20;
     if (event->key() == Qt::Key_Left) {
@@ -185,6 +214,8 @@ void Player::keyPressEvent(QKeyEvent *event) {
         velocityY = -20;
         inJump = true;
         detectPlatformLanding();
+    } else if (event->key() == Qt::Key_Space) {
+        shoot();
     }
 }
 
@@ -206,4 +237,18 @@ void Player::applyFall() {
 
     setPos(x(), newY);
     detectAllCollisions();
+}
+
+void Player::activateBoost() {
+    const int BOOST_DURATION_MS = 30 * 1000;
+    setPixmap(QPixmap(":/imgs/upgraded.png"));
+    poweredUp = true;
+    connect(boostTimer, &QTimer::timeout, this, &Player::deactivateBoost);
+    boostTimer->start(BOOST_DURATION_MS);
+}
+
+void Player::deactivateBoost() {
+    poweredUp = false;
+    setPixmap(QPixmap(":/imgs/player1.png"));
+    facingLeft = false;
 }

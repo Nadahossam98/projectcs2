@@ -6,7 +6,10 @@
 #include <QGraphicsPixmapItem>
 #include <QImage>
 #include "level1.h"
-#include <QApplication>
+#include "level2.h"
+#include "level3.h"
+#include "level4.h"
+#include "level5.h"
 
 Game::Game(QWidget *parent):
     QGraphicsView(parent), current_level(1)
@@ -47,23 +50,29 @@ Game::Game(QWidget *parent):
     game_scene->addItem(main_player);
 
     player_health = new Health(5);
-    player_health->setPos(10, 10);
+    player_health->setPos(10, 10); // Position health slightly lower for better spacing
     game_scene->addItem(player_health);
     main_player->setHealth(player_health);
 
     player_coin_score = new CoinScore();
     game_scene->addItem(player_coin_score);
-    player_coin_score->setPos(5, player_health->y() + player_health->boundingRect().height() + 10);
+    player_coin_score->setPos(5, player_health->y() + player_health->boundingRect().height() + 10); // Below health score
     main_player->setCoinScore(player_coin_score);
 
     player_book_score = new BookScore();
     game_scene->addItem(player_book_score);
-    player_book_score->setPos(5, player_coin_score->y() + player_coin_score->boundingRect().height() + 10);
+    player_book_score->setPos(5, player_coin_score->y() + player_coin_score->boundingRect().height() + 10); // Below coin score
     main_player->setBookScore(player_book_score);
+
+    level_complete_popup = new LevelCompletedWindow();
+    main_player->setLevelCompleteUI(level_complete_popup);
+    connect(level_complete_popup, &LevelCompletedWindow::wants_to_continue, this, &Game::on_level_advanced);
+
+    game_complete_popup = new GameCompletedWindow();
 
     level_display = new QGraphicsTextItem("Level: 1");
     level_display->setFont(QFont("Calibri", 24));
-    level_display->setPos(10, player_book_score->y() + player_book_score->boundingRect().height() + 20);
+    level_display->setPos(10, player_book_score->y() + player_book_score->boundingRect().height() + 20); // Below book score
     game_scene->addItem(level_display);
 
     current_level_instance = new Level1(game_scene, background_ground, cloud_1, cloud_2, cloud_3);
@@ -74,8 +83,6 @@ Game::Game(QWidget *parent):
 void Game::on_level_advanced() {
     ++current_level;
     level_display->setPlainText("Level: " + QString::number(current_level));
-
-    // Remove level items
     current_level_instance->remove_items();
     const int SCREEN_HEIGHT = 650;
 
@@ -86,6 +93,23 @@ void Game::on_level_advanced() {
     main_player->setPos(0, background_ground->y() - main_player->boundingRect().height() + 5);
     main_player->setFocus();
 
-    // Close the game immediately after Level 1 finishes
-    QApplication::quit();  // This will close the game
+    delete current_level_instance;
+    if (current_level == 2)
+        current_level_instance = new Level2(game_scene, background_ground, cloud_1, cloud_2, cloud_3);
+    else if (current_level == 3)
+        current_level_instance = new Level3(game_scene, background_ground, cloud_1, cloud_2, cloud_3);
+    else if (current_level == 4)
+        current_level_instance = new Level4(game_scene, background_ground, cloud_1, cloud_2, cloud_3);
+    else {
+        main_player->setGameCompleteUI(game_complete_popup);
+        current_level_instance = new Level5(game_scene, background_ground, cloud_1, cloud_2, cloud_3);
+    }
+
+    current_level_instance->update_scene();
+    main_player->setLevel(current_level_instance);
+
+    delete level_complete_popup;
+    level_complete_popup = new LevelCompletedWindow();
+    main_player->setLevelCompleteUI(level_complete_popup);
+    connect(level_complete_popup, &LevelCompletedWindow::wants_to_continue, this, &Game::on_level_advanced);
 }

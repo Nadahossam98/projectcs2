@@ -9,6 +9,7 @@
 #include "coinscore.h"
 #include "bookscore.h"
 #include "levelclass.h"
+#include "levelcompletedwindow.h"
 
 class Game: public QGraphicsView {
 public:
@@ -23,6 +24,8 @@ private:
     Health *player_health;
     CoinScore *player_coin_score;
     BookScore *player_book_score;
+    LevelCompletedWindow *level_complete_popup;
+    GameCompletedWindow *game_complete_popup;
     QGraphicsTextItem *level_display;
     int current_level;
     LevelClass *current_level_instance;

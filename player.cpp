@@ -46,21 +46,26 @@ void Player::setGameCompleteUI(GameCompletedWindow *window) {
     finalUI = window;
 }
 
-void Player::detectEnemyCollision() {
+void Player::detectEnemyCollision()
+{
     for (QGraphicsItem* obj : collidingItems()) {
         auto* foe = dynamic_cast<Enemy1*>(obj);
-        if (foe) {
+        if (foe && !foe->isDead()) {
             int offset = foe->boundingRect().width() + boundingRect().width() + 1;
+
             if (poweredUp) {
+                foe->destroy(); // Kill enemy safely
                 walkRight(offset);
                 return;
             }
+
             playerHealth->decrease_health();
             facingLeft ? walkLeft(offset) : walkRight(offset);
             return;
         }
     }
 }
+
 
 void Player::detectSpikesCollision() {
     for (QGraphicsItem* obj : collidingItems()) {

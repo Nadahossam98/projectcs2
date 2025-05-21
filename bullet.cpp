@@ -1,6 +1,7 @@
 #include "bullet.h"
 #include "enemy1.h"
 #include <QGraphicsScene>
+#include <QTimer>
 
 Bullet::Bullet(bool facingLeft, QGraphicsItem *parent)
     : QObject(), QGraphicsPixmapItem(parent), facingLeft(facingLeft), speed(15)
@@ -23,6 +24,8 @@ void Bullet::move() {
         setX(x() + speed);
     }
 
+    if (!scene()) return;
+
     // Remove bullet if out of scene bounds
     if (x() < 0 || x() > scene()->width()) {
         scene()->removeItem(this);
@@ -34,10 +37,8 @@ void Bullet::move() {
     QList<QGraphicsItem*> colliding = collidingItems();
     for (QGraphicsItem* item : colliding) {
         Enemy1* enemy = dynamic_cast<Enemy1*>(item);
-        if (enemy) {
-            scene()->removeItem(enemy);
-            delete enemy;
-
+        if (enemy && !enemy->isDead()) {
+            enemy->destroy();  // ✅ Safely kill enemy
             scene()->removeItem(this);
             delete this;
             return;

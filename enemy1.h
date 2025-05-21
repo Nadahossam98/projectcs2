@@ -1,28 +1,36 @@
 #ifndef ENEMY1_H
 #define ENEMY1_H
 
-#include <QGraphicsPixmapItem>
 #include <QObject>
-#include <QGraphicsItem>
+#include <QGraphicsPixmapItem>
 #include <QTimer>
 
-class Enemy1 : public QObject, public QGraphicsPixmapItem {
+class Enemy1 : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
 
 public:
-    Enemy1(QGraphicsItem *parent = nullptr);
+    explicit Enemy1(QGraphicsItem *parent = nullptr);
+    ~Enemy1();
 
     void move_left(int dx);
     void move_right(int dx);
+
+    void destroy();              // Called when enemy is hit
+    void markForDeletion();      // Actually remove and delete the enemy
+    bool isDead() const;         // True if enemy is not active
+    bool shouldDelete() const;   // True if enemy is flagged for deletion
 
 private slots:
     void update_movement();
 
 private:
-    QTimer *moveTimer;   // Timer for continuous movement
-    bool is_reversed;    // Flag to check if the enemy is reversed
-    bool is_on_platform; // Flag to check if the enemy is on a platform (you can expand this later)
-    bool moving_left;    // Flag to determine the current direction (left or right)
+    QTimer *moveTimer;
+    bool is_reversed;
+    bool is_on_platform;
+    bool moving_left;
+    bool isAlive;
+    bool pendingDeletion;
 };
 
 #endif // ENEMY1_H
